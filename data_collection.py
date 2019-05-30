@@ -16,7 +16,7 @@ def get_one_hot(mode):
     if (mode == 'wing_suit'):
         relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'SA', 'SD', 'ASJ', 'SDL', 'AJW', 'DLW', 'AJ', 'DL', 'nk']
     elif (mode == 'ski'):
-        relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'space', 'spaceW', 'AJW', 'ADW', 'K', 'AJ', 'DL', 'nk']        
+        relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'space', 'spaceW', 'AJW', 'DLW', 'K', 'AJ', 'DL', 'nk']        
     enc = LabelBinarizer()
     one_hot_np = enc.fit_transform(relevant_keys)
     one_hot_np = one_hot_np.astype('int')
@@ -149,7 +149,6 @@ def gather_data(mode):
     last_time = time.time()
     
     paused = False
-    compress = True
     print('Starting data collection')
     
     encode_param = [int(cv2.IMWRITE_JPEG_QUALITY), 95]
@@ -165,7 +164,6 @@ def gather_data(mode):
             screen = cv2.resize(screen, (512, 289))
             screen = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
             
-            #keys = key_check()
             output = keys_to_output(keys, one_hot_dict)
             
             (result, comp_screen) = cv2.imencode('.jpg', screen, encode_param)
@@ -226,4 +224,4 @@ def gather_data(mode):
     
 if __name__ == '__main__':
     mode = 'ski'
-    gather_data()
+    gather_data(mode)
