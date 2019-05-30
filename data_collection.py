@@ -5,6 +5,7 @@ import numpy as np
 import cv2
 import time
 import os
+import pickle
 
 from getkeys import key_check
 from grabscreen import grab_screen
@@ -13,7 +14,7 @@ from grabscreen import grab_screen
 def get_one_hot(mode):
     
     if (mode == 'wing_suit'):
-        relevant_keys = ['W', 'A', 'S', 'D', 'WA', 'WD', 'AJ', 'DL', 'nk']
+        relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'SA', 'SD', 'ASJ', 'SDL', 'AJW', 'DLW', 'AJ', 'DL', 'nk']
     elif (mode == 'ski'):
         relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'space', 'spaceW', 'AJW', 'ADW', 'K', 'AJ', 'DL', 'nk']        
     enc = LabelBinarizer()
@@ -100,8 +101,6 @@ def keys_to_output(keys, one_hot_dict):
     if contains_shift:
         full_keys_str = 'shift' + full_keys_str
     
-    # If we receive input that doesn't match a key, first strip away characters not used
-    
     try:
         output = one_hot_dict[full_keys_str]
     except:
@@ -125,13 +124,20 @@ def get_training_file():
             return (starting_value, file_name)
 
 
-def gather_data():
-    
-    mode = 'ski'
+def gather_data(mode):
 
-    one_hot_dict = get_one_hot(mode)
     (training_idx, training_file) = get_training_file()
-
+    
+    if (training_idx == 0):
+        
+        one_hot_dict = get_one_hot(mode)
+        with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'wb') as handle:
+            pickle.dump(one_hot_dict, handle)
+    
+    else:
+        with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'rb') as handle:
+            one_hot_dict = pickle.load(handle)
+        
     training_data = []
     for i in list(range(4))[::-1]:
         print(i+1)
@@ -182,6 +188,9 @@ def gather_data():
                     training_idx += 1
 
                     training_file = 'D:/steep_training/ski-race/training_data-{}.npy'.format(training_idx)
+        else:
+            if 'X' in keys:
+                break
 
         if 'T' in keys:
 
@@ -216,4 +225,5 @@ def gather_data():
  
     
 if __name__ == '__main__':
+    mode = 'ski'
     gather_data()
