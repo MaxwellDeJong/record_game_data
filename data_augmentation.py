@@ -92,7 +92,7 @@ def augment_turns(train_data, one_hot_dict, mirror_one_hot_dict):
             else:
                 print('ERROR: could not flip image')
     
-    augmented_data = zip(aug_img_arr, aug_one_hot_arr)
+    augmented_data = list(zip(aug_img_arr, aug_one_hot_arr))
     
     return augmented_data
 
