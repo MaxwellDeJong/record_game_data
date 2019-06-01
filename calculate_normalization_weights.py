@@ -8,24 +8,26 @@ Created on Fri May 31 22:57:50 2019
 import numpy as np
 import cv2
 import os
+import pickle
 
 
-def save_individual_file(count, img_arr, one_hot_arr):
+def save_individual_file(count, img_arr, one_hot_arr, label_dict):
 
     for i in range(len(img_arr)):
             
         filename = 'D:/steep_training/ski-race/balanced/training_frame-{}.npy'.format(count + i)
-        np.save(filename, [img_arr[i], one_hot_arr[i]])
+        label_dict[count + i] = one_hot_arr[i]
+        np.save(filename, img_arr[i])
 
 
-def parse_file(filename, global_count):
+def parse_file(filename, global_count, label_dict):
     
     training_data = np.load(filename)
     
     img_arr = [i[0] for i in training_data]
     one_hot_arr = [i[1] for i in training_data]
     
-    save_individual_file(global_count, img_arr, one_hot_arr)
+    save_individual_file(global_count, img_arr, one_hot_arr, label_dict)
     
     img_decomp_arr = [cv2.imdecode(img, 1) for img in img_arr]
     
@@ -38,6 +40,7 @@ def parse_file(filename, global_count):
 def calc_weight_dict():
     
     weight_dict = {}
+    label_dict = {}
     idx = 0
     global_count = 0
     
@@ -47,7 +50,7 @@ def calc_weight_dict():
         filename = 'D:/steep_training/ski-race/balanced/training_data-{}.npy'.format(idx)
         
         if (os.path.isfile(filename)):
-            (length, means, stds) = parse_file(filename, global_count)
+            (length, means, stds) = parse_file(filename, global_count, label_dict)
             
             weight_dict[idx] = (length, means, stds)
             idx += 1
@@ -59,7 +62,7 @@ def calc_weight_dict():
                 os.remove(filename)
             
         else:
-            return weight_dict
+            return (weight_dict, label_dict)
         
         
 def count_n_frames(weight_dict):
@@ -90,19 +93,20 @@ def calc_overall_statistics(weight_dict, n_frames):
         
     return (means / 255, np.sqrt(variances) / 255)
 
-
-def delete_bulk_balanced_data():
-    
     
 def calculate_normalization_coefficients():
     
-    weight_dict = calc_weight_dict()
+    (weight_dict, label_dict) = calc_weight_dict()
     n_frames = count_n_frames(weight_dict)
     
     (means, stds) = calc_overall_statistics(weight_dict, n_frames)
     
-    stats_filename = 'D:/steep_training/ski-race/balanced/normalization_weights.npy'
-    
+    stats_filename = 'D:/steep_training/ski-race/balanced/normalization_weights.npy'   
     np.save(stats_filename, [means, stds])
+    
+    label_filename = 'D:/steep_training/ski-race/balanced/label_dict.pkl'
+    
+    with open(label_filename, 'wb') as handle:
+        pickle.dump(label_dict, handle)
     
 calculate_normalization_coefficients()
