@@ -10,11 +10,22 @@ import cv2
 import os
 
 
-def parse_file(filename):
+def save_individual_file(count, img_arr, one_hot_arr):
+
+    for i in range(len(img_arr)):
+            
+        filename = 'D:/steep_training/ski-race/balanced/training_frame-{}.npy'.format(count + i)
+        np.save(filename, [img_arr[i], one_hot_arr[i]])
+
+
+def parse_file(filename, global_count):
     
     training_data = np.load(filename)
     
     img_arr = [i[0] for i in training_data]
+    one_hot_arr = [i[1] for i in training_data]
+    
+    save_individual_file(global_count, img_arr, one_hot_arr)
     
     img_decomp_arr = [cv2.imdecode(img, 1) for img in img_arr]
     
@@ -28,17 +39,24 @@ def calc_weight_dict():
     
     weight_dict = {}
     idx = 0
+    global_count = 0
+    
+    delete_bulk = False
     
     while True:
         filename = 'D:/steep_training/ski-race/balanced/training_data-{}.npy'.format(idx)
         
         if (os.path.isfile(filename)):
-            (length, means, stds) = parse_file(filename)
+            (length, means, stds) = parse_file(filename, global_count)
             
             weight_dict[idx] = (length, means, stds)
             idx += 1
+            global_count += length
             
             print('Finished analyzing file ', idx)
+            
+            if delete_bulk:
+                os.remove(filename)
             
         else:
             return weight_dict
@@ -71,6 +89,9 @@ def calc_overall_statistics(weight_dict, n_frames):
         variances += local_stds * local_stds
         
     return (means / 255, np.sqrt(variances) / 255)
+
+
+def delete_bulk_balanced_data():
     
     
 def calculate_normalization_coefficients():
