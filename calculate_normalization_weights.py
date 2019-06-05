@@ -9,6 +9,19 @@ import numpy as np
 import cv2
 import os
 import pickle
+import random
+
+def count_training_sets():
+    
+    idx = 0
+ 
+    while True:
+        filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
+        
+        if (os.path.isfile(filename)):
+            idx += 1
+        else:
+            return idx
 
 
 def save_individual_file(count, img_arr, one_hot_arr, label_dict):
@@ -20,7 +33,7 @@ def save_individual_file(count, img_arr, one_hot_arr, label_dict):
         np.save(filename, img_arr[i])
 
 
-def parse_file(filename, global_count, label_dict):
+def parse_file(filename, n_files_avg, n_files, global_count, label_dict):
     
     training_data = np.load(filename)
     
@@ -29,7 +42,12 @@ def parse_file(filename, global_count, label_dict):
     
     save_individual_file(global_count, img_arr, one_hot_arr, label_dict)
     
-    img_decomp_arr = [cv2.imdecode(img, 1) for img in img_arr]
+    n_files_per_set = n_files_avg / n_files
+    
+    samples_to_avg = random.sample(range(2000), n_files_per_set)
+    
+    minibatch_img_arr = [img_arr[i] for i in samples_to_avg]
+    img_decomp_arr = [cv2.imdecode(img, 1) for img in minibatch_img_arr]
     
     means = np.mean(img_decomp_arr, axis=(0, 1, 2))
     stds = np.std(img_decomp_arr, axis=(0, 1, 2))
@@ -37,12 +55,14 @@ def parse_file(filename, global_count, label_dict):
     return (len(img_arr), means, stds)
     
 
-def calc_weight_dict():
+def calc_weight_dict(n_files_avg):
     
     weight_dict = {}
     label_dict = {}
     idx = 0
     global_count = 0
+    
+    n_training_sets = count_training_sets()
     
     delete_bulk = False
     
@@ -50,7 +70,7 @@ def calc_weight_dict():
         filename = 'D:/steep_training/ski-race/balanced/training_data-{}.npy'.format(idx)
         
         if (os.path.isfile(filename)):
-            (length, means, stds) = parse_file(filename, global_count, label_dict)
+            (length, means, stds) = parse_file(filename, n_files_avg, n_training_sets, global_count, label_dict)
             
             weight_dict[idx] = (length, means, stds)
             idx += 1
@@ -96,7 +116,7 @@ def calc_overall_statistics(weight_dict, n_frames):
     
 def calculate_normalization_coefficients():
     
-    (weight_dict, label_dict) = calc_weight_dict()
+    (weight_dict, label_dict) = calc_weight_dict(20000)
     n_frames = count_n_frames(weight_dict)
     
     (means, stds) = calc_overall_statistics(weight_dict, n_frames)

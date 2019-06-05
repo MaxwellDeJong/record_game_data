@@ -255,32 +255,35 @@ def update_single_file_frames(single_file_frames_to_del, local_frames_correction
 def balance_training_data():
     
     (n_files, one_hot_dict, count_dict, aug_count_dict) = count_training_files()
-    new_one_hot_dict = rebase_one_hot_dict(0.03, count_dict, one_hot_dict)
+    new_one_hot_dict = rebase_one_hot_dict(0.01, count_dict, one_hot_dict)
     
-    raw_pct_dict = count_raw_percentages(new_one_hot_dict, count_dict)    
-    single_file_frames_to_del = calc_single_file_frames_to_del(n_files, new_one_hot_dict, count_dict, aug_count_dict)
+    print(new_one_hot_dict)
+    print(count_dict)
     
-    valid_file = True
-    idx = 0
-    
-    print('Single file frames to delete: ', single_file_frames_to_del)
-    
-    if not os.path.exists('D:/steep_training/ski-race/balanced'):
-        os.mkdir('D:/steep_training/ski-race/balanced')
-    
-    while valid_file:
-        (valid_file, local_frames_correction) = save_balanced_data(idx, one_hot_dict, new_one_hot_dict, single_file_frames_to_del)
-        update_single_file_frames(single_file_frames_to_del, local_frames_correction)
-        
-        idx += 1
-          
-    new_one_hot_filename = 'D:/steep_training/ski-race/balanced/one_hot_dict.pkl'
-    original_key_weights_filename = 'D:/steep_training/ski-race/balanced/original_key_weights.pkl'
-    
-    with open(new_one_hot_filename, 'wb') as handle:
-        pickle.dump(new_one_hot_dict, handle)
-        
-    with open(original_key_weights_filename, 'wb') as handle:
-        pickle.dump(raw_pct_dict, handle)
+#    raw_pct_dict = count_raw_percentages(new_one_hot_dict, count_dict)    
+#    single_file_frames_to_del = calc_single_file_frames_to_del(n_files, new_one_hot_dict, count_dict, aug_count_dict)
+#    
+#    valid_file = True
+#    idx = 0
+#    
+#    print('Single file frames to delete: ', single_file_frames_to_del)
+#    
+#    if not os.path.exists('D:/steep_training/ski-race/balanced'):
+#        os.mkdir('D:/steep_training/ski-race/balanced')
+#    
+#    while valid_file:
+#        (valid_file, local_frames_correction) = save_balanced_data(idx, one_hot_dict, new_one_hot_dict, single_file_frames_to_del)
+#        update_single_file_frames(single_file_frames_to_del, local_frames_correction)
+#        
+#        idx += 1
+#          
+#    new_one_hot_filename = 'D:/steep_training/ski-race/balanced/one_hot_dict.pkl'
+#    original_key_weights_filename = 'D:/steep_training/ski-race/balanced/original_key_weights.pkl'
+#    
+#    with open(new_one_hot_filename, 'wb') as handle:
+#        pickle.dump(new_one_hot_dict, handle)
+#        
+#    with open(original_key_weights_filename, 'wb') as handle:
+#        pickle.dump(raw_pct_dict, handle)
 
 balance_training_data()

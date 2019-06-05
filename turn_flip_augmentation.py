@@ -99,13 +99,15 @@ def augment_turns(train_data, one_hot_dict, mirror_one_hot_dict):
 
 def augment_training_file(filename, idx, one_hot_dict, mirror_one_hot_dict):
     
-    train_data = np.load(filename)
-    
-    augmented_data = augment_turns(train_data, one_hot_dict, mirror_one_hot_dict)
-    
     new_filename = 'D:/steep_training/ski-race/training_data-{}--aug.npy'.format(idx)
     
-    np.save(new_filename, augmented_data)
+    if not os.path.isfile(new_filename):
+    
+        train_data = np.load(filename)
+        
+        augmented_data = augment_turns(train_data, one_hot_dict, mirror_one_hot_dict)
+        
+        np.save(new_filename, augmented_data)
 
 
 def augment_all_data():
