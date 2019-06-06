@@ -21,14 +21,6 @@ def get_key(one_hot_vec, one_hot_dict):
     print('One hot dictionary: ', one_hot_dict)
     
     
-def load_count_dict():
-    
-    with open('D:/steep_training/ski-race/balanced/tot_count_dict.pkl', 'rb') as handle:
-        count_dict = pickle.load(handle)
-        
-    return count_dict
-
-
 def count_desired_frames(count_dict):
     
     desired_frames = min(count_dict['AW'], count_dict['DW'])
@@ -119,13 +111,13 @@ def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_sin
 
 def load_dicts():
 
-    with open('D:/steep_training/ski-race/balanced/count_dict.pkl', 'rb') as handle:
+    with open('D:/steep_training/ski-race/balanced/significant_count_dict.pkl', 'rb') as handle:
         count_dict = pickle.load(handle)
 
     with open('D:/steep_training/ski-race/balanced/one_hot_dict.pkl', 'rb') as handle:
         new_one_hot_dict = pickle.load(handle)
 
-    with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'rb') as handle:
+    with open('D:/steep_training/ski-race/balanced/original_one_hot_dict.pkl', 'rb') as handle:
         original_one_hot_dict = pickle.load(handle)
 
     return (count_dict, new_one_hot_dict, original_one_hot_dict)
@@ -175,4 +167,5 @@ def balance_training_data():
         save_balanced_data(idx, one_hot_dict, new_one_hot_dict, running_single_file_frame_diff)
 
 
-balance_training_data()
+if __name__ == '__main__':
+    balance_training_data()

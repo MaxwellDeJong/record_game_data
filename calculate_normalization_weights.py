@@ -124,9 +124,11 @@ def calculate_normalization_coefficients():
     stats_filename = 'D:/steep_training/ski-race/balanced/normalization_weights.npy'   
     np.save(stats_filename, [means, stds])
     
-    label_filename = 'D:/steep_training/ski-race/balanced/label_dict.pkl'
+    label_filename = 'D:/steep_training/ski-race/balanced/training_label_dict.pkl'
     
     with open(label_filename, 'wb') as handle:
         pickle.dump(label_dict, handle)
-    
-calculate_normalization_coefficients()
+
+
+if __name__ == '__main__':
+    calculate_normalization_coefficients()
