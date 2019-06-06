@@ -62,14 +62,9 @@ def calc_single_file_frame_diff(nfiles, new_one_hot_dict, count_dict):
     return single_file_frame_diff
 
 
-def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, single_file_frame_diff, running_single_frame_diff):
+def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_single_file_frame_diff):
     
     filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
-    
-    valid_file = os.path.isfile(filename)
-    
-    if not valid_file:
-        return (False, {})
     
     train_data = list(np.load(filename))
     shuffle(train_data)
@@ -87,79 +82,97 @@ def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, single_file
             
             frame_diff = running_single_file_frame_diff[key]
             int_frame_diff = int(frame_diff)
-            
-            if (int_frame_diff != 0):
-                
-                if (int_frame_diff > 0):
-                    running_single_file_frame_diff[key] -= 1
-                    
-                else:
-                    
-                    balanced_img_data.append(img)
-                    balanced_one_hot_data.append(one_hot)
-                    
-                    augmented_images = all_augmentation[single_file_frame_diff[key] - 1]
-                    running_single_frame_diff[key] += len(augmented_images)
-                    
-                    for aug_img in augmented_images:
-                        balanced_img_data.append(aug_img)
-                        balanced_one_hot_data.append(one_hot)
-            
-            else:
+
+            # If we have no difference between our needed and expected number of frames,
+            # add the data to our training set
+            if (int_frame_diff == 0):
+
                 balanced_img_data.append(img)
                 balanced_ont_hot_data.append(one_hot)
-                        
 
-                
+            # If we have too many frames, don't add them to our training set
+            elif (int_frame_diff > 0):
+            
+                running_single_file_frame_diff[key] -= 1
+                    
+            # If we don't have enough frames, augment the ones we do have
+            else:
+                    
+                balanced_img_data.append(img)
+                balanced_one_hot_data.append(one_hot)
+
+                augmented_images = all_augmentation[running_single_file_frame_diff[key] - 1]
+                running_single_file_frame_diff[key] += len(augmented_images)
+                    
+                for aug_img in augmented_images:
+                    balanced_img_data.append(aug_img)
+                    balanced_one_hot_data.append(one_hot)
+            
     balanced_data = list(zip(balanced_img_data, balanced_one_hot_data))
     shuffle(balanced_data)
     print('Balanced data contains ', len(balanced_data), ' labeled frames')
                 
-    composite_filename = 'D:/steep_training/ski-race/balanced/training_data-{}.npy'.format(idx)
+    balanced_filename = 'D:/steep_training/ski-race/balanced/training_data-{}.npy'.format(idx)
     
-    np.save(composite_filename, balanced_data)
+    np.save(balanced_filename, balanced_data)
     
-    return (True, local_frames_to_del)
+
+def load_dicts():
+
+    with open('D:/steep_training/ski-race/balanced/count_dict.pkl', 'rb') as handle:
+        count_dict = pickle.load(handle)
+
+    with open('D:/steep_training/ski-race/balanced/one_hot_dict.pkl', 'rb') as handle:
+        new_one_hot_dict = pickle.load(handle)
+
+    with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'rb') as handle:
+        original_one_hot_dict = pickle.load(handle)
+
+    return (count_dict, new_one_hot_dict, original_one_hot_dict)
 
 
-def update_single_file_frames(single_file_frames_to_del, local_frames_correction):
-    
-    for key in local_frames_correction:
-        single_file_frames_to_del[key] += local_frames_correction[key]
+def count_training_files():
 
+    idx = 0
+
+    while True:
+
+        filename = 'D:/steep-training/ski-race/training_data-{}.npy'.format(idx)
+
+        if (os.path.isfile(filename)):
+            idx += 1
+        else:
+            return idx
+
+
+def update_single_file_frame_diff(single_file_frame_diff, running_single_file_frame_diff):
+
+    if (running_single_file_frame_diff is None):
+
+        running_single_file_frame_diff = {}
+
+        for key in single_file_frame_diff:
+            running_single_file_frame_diff[key] = single_file_frame_diff[key]
+
+    else:
+
+        for key in single_file_frame_diff:
+
+            running_single_file_frame_diff[key] += single_file_frame_diff[key]
+    
 
 def balance_training_data():
+
+    (count_dict, new_one_hot_dict, original_one_hot_dict) = load_dicts()
+    n_training_files = count_training_files()
+
+    single_file_frame_diff = calc_single_file_frame_diff(nfiles, new_one_hot_dict, count_dict)
+    running_file_frame_diff = None
+
+    for idx in range(n_training_files):
     
-    (n_files, one_hot_dict, count_dict, aug_count_dict) = count_training_files()
-    new_one_hot_dict = rebase_one_hot_dict(0.01, count_dict, one_hot_dict)
-    
-    print(new_one_hot_dict)
-    print(count_dict)
-    
-#    raw_pct_dict = count_raw_percentages(new_one_hot_dict, count_dict)    
-#    single_file_frames_to_del = calc_single_file_frames_to_del(n_files, new_one_hot_dict, count_dict, aug_count_dict)
-#    
-#    valid_file = True
-#    idx = 0
-#    
-#    print('Single file frames to delete: ', single_file_frames_to_del)
-#    
-#    if not os.path.exists('D:/steep_training/ski-race/balanced'):
-#        os.mkdir('D:/steep_training/ski-race/balanced')
-#    
-#    while valid_file:
-#        (valid_file, local_frames_correction) = save_balanced_data(idx, one_hot_dict, new_one_hot_dict, single_file_frames_to_del)
-#        update_single_file_frames(single_file_frames_to_del, local_frames_correction)
-#        
-#        idx += 1
-#          
-#    new_one_hot_filename = 'D:/steep_training/ski-race/balanced/one_hot_dict.pkl'
-#    original_key_weights_filename = 'D:/steep_training/ski-race/balanced/original_key_weights.pkl'
-#    
-#    with open(new_one_hot_filename, 'wb') as handle:
-#        pickle.dump(new_one_hot_dict, handle)
-#        
-#    with open(original_key_weights_filename, 'wb') as handle:
-#        pickle.dump(raw_pct_dict, handle)
+        update_single_file_frame_diff(single_file_frame_dff, running_single_file_frame_diff)
+        save_balanced_data(idx, one_hot_dict, new_one_hot_dict, running_single_file_frame_diff)
+
 
 balance_training_data()
