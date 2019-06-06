@@ -131,4 +131,5 @@ def augment_all_data():
         
         valid_file = os.path.isfile(filename)
 
-augment_all_data()        
+if __name__ == '__main__':
+    augment_all_data()        

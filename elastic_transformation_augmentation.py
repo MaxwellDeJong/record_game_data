@@ -11,13 +11,16 @@ from scipy.ndimage.filters import gaussian_filter
 
 # Elastic transform
 
-def elastic_transform_2D(alpha, sigma, img):
+def elastic_transform(img):
     """`images` is a numpy array of shape (K, M, N) of K images of size M*N."""
     
     images = [img[:, :, i] for i in range(3)]
     
     print(np.shape(images))
     print(images[0].shape)
+    
+    alpha = 2000
+    sigma = 40
     
     rng = np.random.RandomState(42)
     interpolation_order = 1
