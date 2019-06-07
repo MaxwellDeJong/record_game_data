@@ -18,7 +18,7 @@ def process_all_training_data():
     balance_training_data()
 
     # Split up training data into individual files and calculate normalization weights
-    calculate_normalization_weights()
+    calculate_normalization_coefficients()
 
     # Split up validation files
     calc_label_dict()

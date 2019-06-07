@@ -28,9 +28,6 @@ def add_noise_lighting(img):
     
 def add_arrays(original_img_arr, mask_arr):
     
-    print(np.shape(original_img_arr))
-    print(np.shape(mask_arr))
-    
     img_arr = np.copy(original_img_arr)
     
     (max_x, max_y, n_channel) = np.shape(img_arr)
@@ -58,5 +55,3 @@ def test_noise():
     
     if (cv2.waitKey(0) & 0xFF == ord('q')):
         cv2.destroyAllWindows()
-        
-test_noise()

@@ -80,7 +80,7 @@ def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_sin
             if (int_frame_diff == 0):
 
                 balanced_img_data.append(img)
-                balanced_ont_hot_data.append(one_hot)
+                balanced_one_hot_data.append(one_hot)
 
             # If we have too many frames, don't add them to our training set
             elif (int_frame_diff > 0):
@@ -93,7 +93,7 @@ def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_sin
                 balanced_img_data.append(img)
                 balanced_one_hot_data.append(one_hot)
 
-                augmented_images = all_augmentation[running_single_file_frame_diff[key] - 1]
+                augmented_images = all_augmentation(img, abs(int_frame_diff) - 1)
                 running_single_file_frame_diff[key] += len(augmented_images)
                     
                 for aug_img in augmented_images:
@@ -129,7 +129,7 @@ def count_training_files():
 
     while True:
 
-        filename = 'D:/steep-training/ski-race/training_data-{}.npy'.format(idx)
+        filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
 
         if (os.path.isfile(filename)):
             idx += 1
@@ -139,9 +139,7 @@ def count_training_files():
 
 def update_single_file_frame_diff(single_file_frame_diff, running_single_file_frame_diff):
 
-    if (running_single_file_frame_diff is None):
-
-        running_single_file_frame_diff = {}
+    if (running_single_file_frame_diff == {}):
 
         for key in single_file_frame_diff:
             running_single_file_frame_diff[key] = single_file_frame_diff[key]
@@ -151,6 +149,8 @@ def update_single_file_frame_diff(single_file_frame_diff, running_single_file_fr
         for key in single_file_frame_diff:
 
             running_single_file_frame_diff[key] += single_file_frame_diff[key]
+            
+    return running_single_file_frame_diff
     
 
 def balance_training_data():
@@ -158,13 +158,13 @@ def balance_training_data():
     (count_dict, new_one_hot_dict, original_one_hot_dict) = load_dicts()
     n_training_files = count_training_files()
 
-    single_file_frame_diff = calc_single_file_frame_diff(nfiles, new_one_hot_dict, count_dict)
-    running_file_frame_diff = None
+    single_file_frame_diff = calc_single_file_frame_diff(n_training_files, new_one_hot_dict, count_dict)
+    running_single_file_frame_diff = {}
 
     for idx in range(n_training_files):
     
-        update_single_file_frame_diff(single_file_frame_dff, running_single_file_frame_diff)
-        save_balanced_data(idx, one_hot_dict, new_one_hot_dict, running_single_file_frame_diff)
+        running_single_file_frame_diff = update_single_file_frame_diff(single_file_frame_diff, running_single_file_frame_diff)
+        save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_single_file_frame_diff)
 
 
 if __name__ == '__main__':

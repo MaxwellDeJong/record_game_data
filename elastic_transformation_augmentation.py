@@ -16,9 +16,6 @@ def elastic_transform(img):
     
     images = [img[:, :, i] for i in range(3)]
     
-    print(np.shape(images))
-    print(images[0].shape)
-    
     alpha = 2000
     sigma = 40
     
@@ -54,11 +51,9 @@ def test_transform():
     full_img = cv2.imdecode(img, 1)
     cv2.imshow('Original', full_img)
     
-    distorted_img = elastic_transform_2D(2000, 40, full_img)
+    distorted_img = elastic_transform(full_img)
     
     cv2.imshow('Sunspot', distorted_img)
     
     if (cv2.waitKey(0) & 0xFF == ord('q')):
         cv2.destroyAllWindows()
-        
-test_transform()

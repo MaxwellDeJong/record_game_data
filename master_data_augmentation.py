@@ -8,20 +8,25 @@ Created on Wed Jun  5 15:30:45 2019
 from brightness_augmentation import add_uniform_lighting, add_noise_lighting
 from elastic_transformation_augmentation import elastic_transform
 from sunspot_augmentation import generate_sunspot
+import cv2
 
 
 def all_augmentation(img, n_augmentations):
     
+    full_img = cv2.imdecode(img, 1)
+    
     aug_arr = []
     
-    for i in n_augmentations:
+    for i in range(n_augmentations):
         if (i % 4 == 0):
-            aug_arr.append(generate_sunspot(img))
+            new_img = generate_sunspot(full_img)
         elif (i % 4 == 1):
-            aug_arr.append(elastic_transform(img))
+            new_img = elastic_transform(full_img)
         elif (i % 4 == 2):
-            aug_arr.append(add_uniform_lighting(img))
+            new_img = add_uniform_lighting(full_img)
         elif (i % 4 == 3):
-            aug_arr.append(add_noise_lighting(img))
+            new_img = add_noise_lighting(full_img)
+            
+        aug_arr.append(cv2.imencode('.jpg', new_img))
             
     return aug_arr
