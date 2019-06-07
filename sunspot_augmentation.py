@@ -2,6 +2,7 @@ import numpy as np
 from scipy.stats import multivariate_normal
 import random
 import cv2
+import matplotlib.pyplot as plt
 
 
 def generate_2d_gaussian(x_mu, y_mu, std_x, std_y, intensity):
@@ -34,36 +35,35 @@ def generate_sunspot(full_img):
     intensity = random.randint(120, 200)
     
     (_, _, gaussian_mask) = generate_2d_gaussian(x_mu, y_mu, std_x, std_y, intensity)
-    
-    full_img = add_arrays(full_img, gaussian_mask)
-    
-    return full_img
+
+    return add_arrays(full_img, gaussian_mask)
 
 
-def add_arrays(original_img_arr, mask_arr):
+def add_arrays(img_arr, mask_arr):
     
-    img_arr = np.copy(original_img_arr)
+    # Legit no idea why this is necessary
+    c0 = np.clip(img_arr[:, :, 0] + mask_arr, 0, 255).astype('uint8')
+    c1 = np.clip(img_arr[:, :, 1] + mask_arr, 0, 255).astype('uint8')
+    c2 = np.clip(img_arr[:, :, 2] + mask_arr, 0, 255).astype('uint8')
     
-    (max_x, max_y, n_channel) = np.shape(img_arr)
-    
-    for i in range(max_x):
-        for j in range(max_y):
-            for k in range(n_channel):
-                img_arr[i, j, k] = int(min(img_arr[i, j, k] + mask_arr[i, j], 254))
-            
-    return img_arr
+    return np.dstack((c0, c1, c2)).astype('uint8')
 
 
 def test_sunspot():
     
-    img = np.load('D:/steep_training/ski-race/training_data-3--aug.npy')[89][0]
+    img = np.load('D:/steep_training/ski-race/training_data-3.npy')[89][0]
     
     full_img = cv2.imdecode(img, 1)
     cv2.imshow('Original', full_img)
     
+    np.save('D:/steep_training/original.npy', full_img)
+    
     sun_spot_img = generate_sunspot(full_img)
+    np.save('D:/steep_training/sunspot.npy', sun_spot_img)
     
     cv2.imshow('Sunspot', sun_spot_img)
     
     if (cv2.waitKey(0) & 0xFF == ord('q')):
         cv2.destroyAllWindows()
+        
+    cv2.imwrite('sun_spot.png', sun_spot_img)

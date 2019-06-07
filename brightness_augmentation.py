@@ -26,32 +26,28 @@ def add_noise_lighting(img):
     return add_arrays(img, noise)
     
     
-def add_arrays(original_img_arr, mask_arr):
+def add_arrays(img_arr, mask_arr):
     
-    img_arr = np.copy(original_img_arr)
-    
-    (max_x, max_y, n_channel) = np.shape(img_arr)
-    
-    for i in range(max_x):
-        for j in range(max_y):
-            for k in range(n_channel):
-                img_arr[i, j, k] = int(max(min(img_arr[i, j, k] + mask_arr[i, j, k], 254), 0))
-            
-    return img_arr
+    return np.clip(img_arr + mask_arr, 0, 255).astype('uint8')
    
     
 def test_noise():
     
-    img = np.load('D:/steep_training/ski-race/training_data-3--aug.npy')[89][0]
+    img = np.load('D:/steep_training/ski-race/training_data-3.npy')[89][0]
     
     full_img = cv2.imdecode(img, 1)
     cv2.imshow('Original', full_img)
+    
+    np.save('D:/steep_training/original.npy', full_img)
     
     uniform_img = add_uniform_lighting(full_img)
     noise_img = add_noise_lighting(full_img)
     
     cv2.imshow('Uniform', uniform_img)
     cv2.imshow('Noise', noise_img)
+    
+    np.save('D:/steep_training/uniform.npy', uniform_img)
+    np.save('D:/steep_training/noise.npy', noise_img)
     
     if (cv2.waitKey(0) & 0xFF == ord('q')):
         cv2.destroyAllWindows()

@@ -41,12 +41,12 @@ def elastic_transform(img):
                                           order=interpolation_order).reshape(image_shape)
                           for image in images]
     
-    return np.dstack((transformed_images[0], transformed_images[1], transformed_images[2]))
+    return np.dstack((transformed_images[0], transformed_images[1], transformed_images[2])).astype('uint8')
 
 
 def test_transform():
     
-    img = np.load('D:/steep_training/ski-race/training_data-3--aug.npy')[89][0]
+    img = np.load('D:/steep_training/ski-race/training_data-3.npy')[89][0]
     
     full_img = cv2.imdecode(img, 1)
     cv2.imshow('Original', full_img)
