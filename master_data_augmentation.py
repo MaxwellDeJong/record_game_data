@@ -27,6 +27,8 @@ def all_augmentation(img, n_augmentations):
         elif (i % 4 == 3):
             new_img = add_noise_lighting(full_img)
             
-        aug_arr.append(cv2.imencode('.jpg', new_img))
+        (res, comp_img) = cv2.imencode('.jpg', new_img)
+            
+        aug_arr.append(comp_img)
             
     return aug_arr

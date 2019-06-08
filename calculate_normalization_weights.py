@@ -42,9 +42,9 @@ def parse_file(filename, n_files_avg, n_files, global_count, label_dict):
     
     save_individual_file(global_count, img_arr, one_hot_arr, label_dict)
     
-    n_files_per_set = n_files_avg / n_files
+    n_files_per_set = int(n_files_avg / n_files)
     
-    samples_to_avg = random.sample(range(2000), n_files_per_set)
+    samples_to_avg = random.sample(range(len(img_arr)), n_files_per_set)
     
     minibatch_img_arr = [img_arr[i] for i in samples_to_avg]
     img_decomp_arr = [cv2.imdecode(img, 1) for img in minibatch_img_arr]

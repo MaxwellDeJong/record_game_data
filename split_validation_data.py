@@ -11,7 +11,7 @@ def load_dicts():
     with open(old_one_hot_filename, 'rb') as handle:
         old_one_hot_dict = pickle.load(handle)
 
-    with open(new_old_hot_filename, 'rb') as handle:
+    with open(new_one_hot_filename, 'rb') as handle:
         new_one_hot_dict = pickle.load(handle)
 
     return (old_one_hot_dict, new_one_hot_dict)
@@ -68,7 +68,7 @@ def calc_label_dict():
     delete_bulk = False
     
     while True:
-        filename = 'D:/steep_training/ski-race/balanced/validation_data-{}.npy'.format(idx)
+        filename = 'D:/steep_training/ski-race/validation_data-{}.npy'.format(idx)
         
         if (os.path.isfile(filename)):
 
@@ -79,13 +79,15 @@ def calc_label_dict():
             
             if delete_bulk:
                 os.remove(filename)
+                
+            idx += 1
             
         else:
 
             label_filename = 'D:/steep_training/ski-race/balanced/validation_label_dict.pkl'
 
             with open(label_filename, 'wb') as handle:
-                pickle.dump(label_filename, label_dict)
+                pickle.dump(label_dict, handle)
 
             break
 
