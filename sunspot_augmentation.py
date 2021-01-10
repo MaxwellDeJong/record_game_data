@@ -10,7 +10,7 @@ def generate_2d_gaussian(x_mu, y_mu, std_x, std_y, intensity):
     mean = [x_mu, y_mu]
     cov = [[std_x * std_x, 0], [0, std_y * std_y]]
     
-    x, y = np.mgrid[0:289:1, 0:512:1]
+    x, y = np.mgrid[0:180:1, 0:320:1]
     pos = np.empty(x.shape + (2,))
     
     pos[:, :, 0] = x
@@ -26,8 +26,8 @@ def generate_2d_gaussian(x_mu, y_mu, std_x, std_y, intensity):
 
 def generate_sunspot(full_img):
     
-    x_mu = random.randint(20, 269)
-    y_mu = random.randint(200, 492)
+    x_mu = random.randint(20, 160)
+    y_mu = random.randint(100, 300)
     
     std_x = random.randint(15, 40)
     std_y = random.randint(15, 40)
@@ -41,7 +41,6 @@ def generate_sunspot(full_img):
 
 def add_arrays(img_arr, mask_arr):
     
-    # Legit no idea why this is necessary
     c0 = np.clip(img_arr[:, :, 0] + mask_arr, 0, 255).astype('uint8')
     c1 = np.clip(img_arr[:, :, 1] + mask_arr, 0, 255).astype('uint8')
     c2 = np.clip(img_arr[:, :, 2] + mask_arr, 0, 255).astype('uint8')
@@ -67,3 +66,5 @@ def test_sunspot():
         cv2.destroyAllWindows()
         
     cv2.imwrite('sun_spot.png', sun_spot_img)
+    
+#test_sunspot()

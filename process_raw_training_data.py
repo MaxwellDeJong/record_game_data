@@ -20,9 +20,9 @@ def deep_dict_copy(dict_to_copy):
     return new_dict
 
 
-def load_one_hot_dict():
+def load_one_hot_dict(dirname='ski-race'):
         
-    with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'rb') as handle:
+    with open('D:/steep_training/' + dirname + '/one_hot_dict.pkl', 'rb') as handle:
         one_hot_dict = pickle.load(handle)
         
     return one_hot_dict
@@ -63,32 +63,35 @@ def count_file(filename, one_hot_dict, count_dict):
         count_dict[key] += 1
         
         
-def count_files(idx, one_hot_dict, count_dict):
+def count_files(idx, one_hot_dict, count_dict, dirname='ski-race', augmented_turns=True):
     '''Counts the number of all key presses in a training file and its
     associated augmented file.'''
     
-    filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
-    
+    filename = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(idx)
     count_file(filename, one_hot_dict, count_dict)
     
-    next_filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx+1)
+    if augmented_turns:
+        aug_filename = 'D:/steep_training/' + dirname + '/training_data-{}--aug.npy'.format(idx)
+        count_file(aug_filename, one_hot_dict, count_dict)
+    
+    next_filename = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(idx+1)
     
     valid_next_file = os.path.isfile(next_filename)
     
     return valid_next_file
     
     
-def count_training_files():
+def count_training_files(dirname='ski-race'):
     '''Counts all key presses across all training and augmented files.'''
     
-    one_hot_dict = load_one_hot_dict()
+    one_hot_dict = load_one_hot_dict(dirname=dirname)
     
     count_dict = initialize_count_dict(one_hot_dict)
     
     n_files = 0
     
     idx = 0   
-    filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
+    filename = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(idx)
                                                          
     valid_file = os.path.isfile(filename)
     
@@ -96,7 +99,7 @@ def count_training_files():
         
         print('Counting keystrokes for file ', idx)
         
-        valid_file = count_files(idx, one_hot_dict, count_dict)
+        valid_file = count_files(idx, one_hot_dict, count_dict, dirname=dirname)
         n_files += 1
         idx += 1
         
@@ -163,20 +166,21 @@ def count_raw_percentages(new_one_hot_dict, count_dict):
     return (raw_pct_dict, tot_count_dict)
 
 
-def process_raw_training_data():
+def process_raw_training_data(dirname='ski-race'):
     
-    (n_files, one_hot_dict, raw_count_dict) = count_training_files()
-    new_one_hot_dict = rebase_one_hot_dict(0.01, raw_count_dict, one_hot_dict)
+    (n_files, one_hot_dict, raw_count_dict) = count_training_files(dirname=dirname)
+    new_one_hot_dict = rebase_one_hot_dict(0.05, raw_count_dict, one_hot_dict)
     
     (raw_pct_dict, sig_count_dict) = count_raw_percentages(new_one_hot_dict, raw_count_dict)   
     
-    if not os.path.exists('D:/steep_training/ski-race/balanced'):
-        os.mkdir('D:/steep_training/ski-race/balanced')
+    if not os.path.exists('D:/steep_training/' + dirname + '/balanced'):
+        os.mkdir('D:/steep_training/' + dirname + '/balanced')
     
-    new_one_hot_filename = 'D:/steep_training/ski-race/balanced/one_hot_dict.pkl'
-    original_one_hot_filename = 'D:/steep_training/ski-race/balanced/original_one_hot_dict.pkl'
-    original_key_weights_filename = 'D:/steep_training/ski-race/balanced/original_key_weights.pkl'
-    tot_counts_filename = 'D:/steep_training/ski-race/balanced/significant_count_dict.pkl'
+    new_one_hot_filename = 'D:/steep_training/' + dirname + '/balanced/one_hot_dict.pkl'
+    original_one_hot_filename = 'D:/steep_training/' + dirname + '/balanced/original_one_hot_dict.pkl'
+    original_key_weights_filename = 'D:/steep_training/' + dirname + '/balanced/original_key_weights.pkl'
+    tot_counts_filename = 'D:/steep_training/' + dirname + '/balanced/significant_count_dict.pkl'
+    tot_raw_counts_filename = 'D:/steep_training/' + dirname + '/balanced/raw_count_dict.pkl'
     
     with open(new_one_hot_filename, 'wb') as handle:
         pickle.dump(new_one_hot_dict, handle)
@@ -189,7 +193,10 @@ def process_raw_training_data():
 
     with open(original_one_hot_filename, 'wb') as handle:
         pickle.dump(one_hot_dict, handle)
+        
+    with open(tot_raw_counts_filename, 'wb') as handle:
+        pickle.dump(raw_count_dict, handle)
 
 
 if __name__ == '__main__':
-    process_raw_training_data()
+    process_raw_training_data(dirname='wing-suit')

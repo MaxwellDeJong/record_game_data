@@ -49,11 +49,15 @@ def test_transform():
     img = np.load('D:/steep_training/ski-race/training_data-3.npy')[89][0]
     
     full_img = cv2.imdecode(img, 1)
-    cv2.imshow('Original', full_img)
-    
     distorted_img = elastic_transform(full_img)
+        
+    np.save('D:/steep_training/original.npy', full_img)
+    np.save('D:/steep_training/distorted.npy', distorted_img)
     
-    cv2.imshow('Sunspot', distorted_img)
+    cv2.imshow('Original', full_img)    
+    cv2.imshow('Distorted', distorted_img)
     
     if (cv2.waitKey(0) & 0xFF == ord('q')):
         cv2.destroyAllWindows()
+        
+#test_transform()

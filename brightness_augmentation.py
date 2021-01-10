@@ -51,3 +51,5 @@ def test_noise():
     
     if (cv2.waitKey(0) & 0xFF == ord('q')):
         cv2.destroyAllWindows()
+        
+#test_noise()

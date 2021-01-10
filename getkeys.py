@@ -2,6 +2,7 @@
 # Modified from github.com/Sentdex/pygta
 
 import win32api as wapi
+import time
 
 keyList = ["\b"]
 for char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ ":
@@ -15,3 +16,10 @@ def key_check():
         if wapi.GetAsyncKeyState(ord(key)):
             keys.append(key)
     return keys
+
+if __name__ == '__main__':
+    num_keys = 0
+    while (num_keys < 1000):
+        keys = key_check()
+        print(keys)
+        time.sleep(0.01)

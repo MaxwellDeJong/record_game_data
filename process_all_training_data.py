@@ -9,10 +9,10 @@ from balance_training_data import balance_training_data
 from split_validation_data import calc_label_dict
 from calculate_normalization_weights import calculate_normalization_coefficients
 
-def process_all_training_data():
+def process_all_training_data(dirname='ski-race'):
     
     # First, process our raw training files to determine relevant categories
-    process_raw_training_data()
+    #process_raw_training_data(dirname=dirname)
     
     # Augment and balance training data
     balance_training_data()
@@ -24,4 +24,4 @@ def process_all_training_data():
     calc_label_dict()
 
 
-process_all_training_data()
+process_all_training_data(dirname='ski-race2')

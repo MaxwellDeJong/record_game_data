@@ -70,20 +70,29 @@ def is_symmetric(one_hot_vec, one_hot_dict):
     return False
 
 
-def augment_turns(train_data, one_hot_dict, mirror_one_hot_dict):
+def augment_turns(train_data, one_hot_dict, mirror_one_hot_dict, compressed=False):
     
     aug_img_arr = []
     aug_one_hot_arr = []
     
     for i in train_data:
-        img = cv2.imdecode(i[0], 1)
+        
+        if compressed:
+            img = cv2.imdecode(i[0], 1)
+        else:
+            img = i[0]
+            
         one_hot = i[1]
         
         if (is_symmetric(one_hot, mirror_one_hot_dict)):
             
             img_mirror = cv2.flip(img, 1)
             
-            res, img_mirror_comp = cv2.imencode('.jpg', img_mirror)
+            if compressed:
+                res, img_mirror_comp = cv2.imencode('.jpg', img_mirror)
+            else:
+                res = True
+                img_mirror_comp = img_mirror
             
             mirror_one_hot = get_mirror_one_hot(one_hot, one_hot_dict, mirror_one_hot_dict)
             if res:
@@ -97,9 +106,9 @@ def augment_turns(train_data, one_hot_dict, mirror_one_hot_dict):
     return augmented_data
 
 
-def augment_training_file(filename, idx, one_hot_dict, mirror_one_hot_dict):
+def augment_training_file(filename, idx, one_hot_dict, mirror_one_hot_dict, dirname='ski-race'):
     
-    new_filename = 'D:/steep_training/ski-race/training_data-{}--aug.npy'.format(idx)
+    new_filename = 'D:/steep_training/' + dirname + '/training_data-{}--aug.npy'.format(idx)
     
     if not os.path.isfile(new_filename):
     
@@ -110,26 +119,26 @@ def augment_training_file(filename, idx, one_hot_dict, mirror_one_hot_dict):
         np.save(new_filename, augmented_data)
 
 
-def augment_all_data():
+def augment_all_data(dirname='ski-race'):
     
-    with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'rb') as handle:
+    with open('D:/steep_training/' + dirname + '/one_hot_dict.pkl', 'rb') as handle:
         one_hot_dict = pickle.load(handle)
         
     mirror_one_hot_dict = get_mirror_one_hot_dict(one_hot_dict)
     
     idx = 0   
-    filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
+    filename = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(idx)
     
     valid_file = (os.path.isfile(filename))
     
     while valid_file:
         
-        augment_training_file(filename, idx, one_hot_dict, mirror_one_hot_dict)
+        augment_training_file(filename, idx, one_hot_dict, mirror_one_hot_dict, dirname=dirname)
         
         idx += 1      
-        filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
+        filename = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(idx)
         
         valid_file = os.path.isfile(filename)
 
 if __name__ == '__main__':
-    augment_all_data()        
+    augment_all_data(dirname='wing-suit')        

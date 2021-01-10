@@ -23,7 +23,8 @@ def get_key(one_hot_vec, one_hot_dict):
     
 def count_desired_frames(count_dict):
     
-    desired_frames = min(count_dict['AW'], count_dict['DW'])
+    #desired_frames = min(count_dict['AW'], count_dict['DW'])
+    desired_frames = 120000
     
     return desired_frames
 
@@ -54,11 +55,16 @@ def calc_single_file_frame_diff(nfiles, new_one_hot_dict, count_dict):
     return single_file_frame_diff
 
 
-def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_single_file_frame_diff):
+def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_single_file_frame_diff, dirname='ski-race', augmented_turns=True):
     
-    filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
+    filename = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(idx)
+    train_data = np.load(filename)
     
-    train_data = list(np.load(filename))
+    if augmented_turns:
+        aug_filename = 'D:/steep_training/' + dirname + '/training_data-{}--aug.npy'.format(idx)
+        train_data = np.concatenate((train_data, np.load(aug_filename)))
+    
+    train_data = list(train_data)    
     shuffle(train_data)
     
     balanced_img_data = []
@@ -104,32 +110,32 @@ def save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_sin
     shuffle(balanced_data)
     print('Balanced data contains ', len(balanced_data), ' labeled frames')
                 
-    balanced_filename = 'D:/steep_training/ski-race/balanced/training_data-{}.npy'.format(idx)
+    balanced_filename = 'D:/steep_training/' + dirname + '/balanced/training_data-{}.npy'.format(idx)
     
     np.save(balanced_filename, balanced_data)
     
 
-def load_dicts():
+def load_dicts(dirname='ski-race'):
 
-    with open('D:/steep_training/ski-race/balanced/significant_count_dict.pkl', 'rb') as handle:
+    with open('D:/steep_training/' + dirname + '/balanced/significant_count_dict.pkl', 'rb') as handle:
         count_dict = pickle.load(handle)
 
-    with open('D:/steep_training/ski-race/balanced/one_hot_dict.pkl', 'rb') as handle:
+    with open('D:/steep_training/' + dirname + '/balanced/one_hot_dict.pkl', 'rb') as handle:
         new_one_hot_dict = pickle.load(handle)
 
-    with open('D:/steep_training/ski-race/balanced/original_one_hot_dict.pkl', 'rb') as handle:
+    with open('D:/steep_training/' + dirname + '/balanced/original_one_hot_dict.pkl', 'rb') as handle:
         original_one_hot_dict = pickle.load(handle)
 
     return (count_dict, new_one_hot_dict, original_one_hot_dict)
 
 
-def count_training_files():
+def count_training_files(dirname='ski-race'):
 
     idx = 0
 
     while True:
 
-        filename = 'D:/steep_training/ski-race/training_data-{}.npy'.format(idx)
+        filename = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(idx)
 
         if (os.path.isfile(filename)):
             idx += 1
@@ -153,10 +159,10 @@ def update_single_file_frame_diff(single_file_frame_diff, running_single_file_fr
     return running_single_file_frame_diff
     
 
-def balance_training_data():
+def balance_training_data(dirname='ski-race'):
 
-    (count_dict, new_one_hot_dict, original_one_hot_dict) = load_dicts()
-    n_training_files = count_training_files()
+    (count_dict, new_one_hot_dict, original_one_hot_dict) = load_dicts(dirname=dirname)
+    n_training_files = count_training_files(dirname=dirname)
 
     single_file_frame_diff = calc_single_file_frame_diff(n_training_files, new_one_hot_dict, count_dict)
     running_single_file_frame_diff = {}
@@ -164,8 +170,8 @@ def balance_training_data():
     for idx in range(n_training_files):
     
         running_single_file_frame_diff = update_single_file_frame_diff(single_file_frame_diff, running_single_file_frame_diff)
-        save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_single_file_frame_diff)
+        save_balanced_data(idx, original_one_hot_dict, new_one_hot_dict, running_single_file_frame_diff, dirname=dirname)
 
 
 if __name__ == '__main__':
-    balance_training_data()
+    balance_training_data(dirname='wing-suit')

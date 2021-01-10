@@ -11,12 +11,16 @@ from getkeys import key_check
 from grabscreen import grab_screen
 
 
-def get_one_hot(mode):
+def get_one_hot(mode, add_shift=False):
     
     if (mode == 'wing_suit'):
         relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'SA', 'SD', 'ASJ', 'SDL', 'AJW', 'DLW', 'AJ', 'DL', 'nk']
     elif (mode == 'ski'):
-        relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'space', 'spaceW', 'AJW', 'DLW', 'K', 'AJ', 'DL', 'nk']        
+        relevant_keys = ['W', 'A', 'S', 'D', 'AW', 'DW', 'space', 'spaceW', 'AJW', 'DLW', 'K', 'AJ', 'DL', 'nk']   
+        
+    if add_shift:
+        relevant_keys = relevant_keys + ['shift' + key for key in relevant_keys]
+        
     enc = LabelBinarizer()
     one_hot_np = enc.fit_transform(relevant_keys)
     one_hot_np = one_hot_np.astype('int')
@@ -93,13 +97,7 @@ def keys_to_output(keys, one_hot_dict):
         keys.remove('\xa0')
         
     keys_str = ''.join(sorted(keys))
-    
-    full_keys_str = keys_str[:]
-            
-    if contains_space:
-        full_keys_str = 'space' + full_keys_str
-    if contains_shift:
-        full_keys_str = 'shift' + full_keys_str
+    full_keys_str = get_full_keys_str(keys_str, contains_space, contains_shift)
     
     try:
         output = one_hot_dict[full_keys_str]
@@ -109,13 +107,13 @@ def keys_to_output(keys, one_hot_dict):
     return output
 
 
-def get_training_file():
+def get_training_file(dirname='ski-race'):
 
     starting_value = 0
 
     while True:
 
-        file_name = 'D:/steep_training/ski-race/training_data-{}.npy'.format(starting_value)
+        file_name = 'D:/steep_training/' + dirname + '/training_data-{}.npy'.format(starting_value)
 
         if os.path.isfile(file_name):
             starting_value += 1
@@ -124,21 +122,22 @@ def get_training_file():
             return (starting_value, file_name)
 
 
-def gather_data(mode):
+def gather_data(mode, compress=False, show_img=False, img_size=(320, 180), dirname='ski-race'):
 
-    (training_idx, training_file) = get_training_file()
+    (training_idx, training_file) = get_training_file(dirname=dirname)
     
     if (training_idx == 0):
         
         one_hot_dict = get_one_hot(mode)
-        with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'wb') as handle:
+        with open('D:/steep_training/' + dirname + '/one_hot_dict.pkl', 'wb') as handle:
             pickle.dump(one_hot_dict, handle)
     
     else:
-        with open('D:/steep_training/ski-race/one_hot_dict.pkl', 'rb') as handle:
+        with open('D:/steep_training/' + dirname + '/one_hot_dict.pkl', 'rb') as handle:
             one_hot_dict = pickle.load(handle)
         
     training_data = []
+    time_data = []
     for i in list(range(4))[::-1]:
         print(i+1)
         time.sleep(1)
@@ -161,13 +160,24 @@ def gather_data(mode):
         if not paused:
 
             screen = grab_screen(region=(0, title_bar_offset, 1260, 710))
-            screen = cv2.resize(screen, (512, 289))
+            time_screen = screen[488:513, 120:290]
+            time_screen = cv2.resize(time_screen, (340, 50))
+            screen = cv2.resize(screen, img_size)
             screen = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
+            time_screen = cv2.cvtColor(time_screen, cv2.COLOR_BGR2RGB)
+            
+            if show_img:
+                cv2.imshow('Screen', screen)
+                cv2.imshow('Time screen', time_screen)
+                cv2.waitKey(10)
             
             output = keys_to_output(keys, one_hot_dict)
             
-            (result, comp_screen) = cv2.imencode('.jpg', screen, encode_param)
-            training_data.append([comp_screen, output])
+            if compress:
+                (result, screen) = cv2.imencode('.jpg', screen, encode_param)
+            #(result, comp_screen) = cv2.imencode('.jpg', screen, encode_param)
+            training_data.append([screen, output])
+            #time_data.append(time_screen)
 
             if len(training_data) % 500 == 0:
 
@@ -177,15 +187,18 @@ def gather_data(mode):
 
                 last_time = curr_time
 
+                #if len(training_data) == 500:
                 if len(training_data) == 2000:
                     
                     np.save(training_file, training_data)
+                    #np.save('D:/steep_training/ski-race2/time_data-0.npy'.format(training_idx), time_data)
                     print('SAVED training file ', training_idx)
 
                     training_data = []
                     training_idx += 1
 
-                    training_file = 'D:/steep_training/ski-race/training_data-{}.npy'.format(training_idx)
+                    training_file = 'D:/steep_training/' + dirname + \
+                        '/training_data-{}.npy'.format(training_idx)
         else:
             if 'X' in keys:
                 break
@@ -223,5 +236,5 @@ def gather_data(mode):
  
     
 if __name__ == '__main__':
-    mode = 'ski'
-    gather_data(mode)
+    mode = 'wing_suit'
+    gather_data(mode, dirname='wing-suit')
